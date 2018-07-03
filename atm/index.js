@@ -6,7 +6,7 @@ let limits = {
   500: 2,
   100: 5,
   50: 100,
-  30: 23,
+  30: 23
 };
 
 function hasMoney(limits) {
@@ -44,18 +44,21 @@ function hasMoney(limits) {
 } */
 
 function getSum(res) {
-  return res.reduce((sum, item) => (sum + item), 0);
+  return res.reduce((sum, item) => sum + item, 0);
 }
 
 function objKeysToNumArr(obj) {
-  return Object.keys(obj).map(key => +key)
+  return Object.keys(obj).map(key => +key);
 }
 
 function arrayToObj(arr) {
-  return arr.reduce((obj, item) => ({
-    ...obj,
-    [item]: obj[item] ? obj[item] + 1 : 1,
-  }), 0)
+  return arr.reduce(
+    (obj, item) => ({
+      ...obj,
+      [item]: obj[item] ? obj[item] + 1 : 1
+    }),
+    0
+  );
 }
 
 function getMoney(amount, limits) {
@@ -63,7 +66,11 @@ function getMoney(amount, limits) {
   let res = [];
   let moneyTypes = objKeysToNumArr(limits).sort((a, b) => b - a, 0);
   let startIndex = 0;
-  while (getSum(res) !== amount && hasMoney(newLimits)) {
+  while (
+    getSum(res) !== amount &&
+    hasMoney(newLimits) &&
+    startIndex <= moneyTypes.length
+  ) {
     let i = startIndex;
     while (moneyTypes[i] > amount - getSum(res)) {
       ++i;
@@ -71,7 +78,7 @@ function getMoney(amount, limits) {
     let currentType = moneyTypes[i];
     if (i === moneyTypes.length) {
       let lastPushed = res.pop();
-      newLimits[lastPushed] += 1
+      newLimits[lastPushed] += 1;
       startIndex = moneyTypes.indexOf(lastPushed) + 1;
     } else {
       if (newLimits[currentType]) {
@@ -82,8 +89,10 @@ function getMoney(amount, limits) {
       }
     }
   }
+  if (getSum(res) < amount) {
+    throw new Error("Can't give money");
+  }
   return { newLimits, res: arrayToObj(res) };
 }
-
 
 console.log(getMoney(820, limits));
