@@ -6,13 +6,14 @@ let limits = {
   500: 2,
   100: 5,
   50: 100,
+  30: 23,
 };
 
 function hasMoney(limits) {
   return Object.values(limits).some(quantity => quantity > 0);
 }
 
-function getMoney(amount) {
+/* function getMoney(amount) {
   let moneyTypes = Object.keys(limits).map(key => +key);
   moneyTypes.reverse();
   if (amount % moneyTypes[moneyTypes.length - 1]) {
@@ -40,46 +41,49 @@ function getMoney(amount) {
     throw new Error('Not enough money');
   }
   return res;
+} */
+
+function getSum(res) {
+  return res.reduce((sum, item) => (sum + item), 0);
 }
 
-// function getSum(resObj) {
-//   let sum = 0;
-//   for (let key in resObj) {
-//     sum += key * resObj[key];
-//   }
-//   return sum;
-// }
+function objKeysToNumArr(obj) {
+  return Object.keys(obj).map(key => +key)
+}
 
-// function objKeysToNumArr(obj) {
-//   return Object.keys(obj).map(key => +key)
-// }
+function arrayToObj(arr) {
+  return arr.reduce((obj, item) => ({
+    ...obj,
+    [item]: obj[item] ? obj[item] + 1 : 1,
+  }), 0)
+}
 
-// function getMoney(amount, limits) {
-//   let res = {};
-//   let newLimits = {...limits};
-//   const limitsArr = objKeysToNumArr(limits);
-//   limitsArr.reverse();
-//   let startPos = 0;
-//   while (getSum(res) !== amount) {
-//     let i = startPos;
+function getMoney(amount, limits) {
+  let newLimits = { ...limits };
+  let res = [];
+  let moneyTypes = objKeysToNumArr(limits).sort((a, b) => b - a, 0);
+  let startIndex = 0;
+  while (getSum(res) !== amount && hasMoney(newLimits)) {
+    let i = startIndex;
+    while (moneyTypes[i] > amount - getSum(res)) {
+      ++i;
+    }
+    let currentType = moneyTypes[i];
+    if (i === moneyTypes.length) {
+      let lastPushed = res.pop();
+      newLimits[lastPushed] += 1
+      startIndex = moneyTypes.indexOf(lastPushed) + 1;
+    } else {
+      if (newLimits[currentType]) {
+        newLimits[currentType] -= 1;
+        res.push(currentType);
+      } else {
+        ++i;
+      }
+    }
+  }
+  return { newLimits, res: arrayToObj(res) };
+}
 
-//     while (limitsArr[i] > (amount - getSum(res)) && newLimits[limitsArr[i]] > 0) {
-//       ++i;
-//     }
 
-//     if (limitsArr[i] === undefined) {
-//       let maxKey = Math.max.apply(null, objKeysToNumArr(res));
-//       startPos = limitsArr.indexOf(maxKey) + 1;
-//       res = {};
-//       newLimits = {...limits};
-//     }
-//     if (limitsArr[i] <= (amount - getSum(res))) {
-//       res[limitsArr[i]] = res[limitsArr[i]] ? res[limitsArr[i]] + 1 : 1;
-//       newLimits[limitsArr[i]] -= 1;
-//      }
-//   }
-//   return {res, newLimits};
-// }
-
-
-console.log(getMoney(31500));
+console.log(getMoney(820, limits));
